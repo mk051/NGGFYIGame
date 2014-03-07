@@ -1,0 +1,73 @@
+body {
+	padding: 0;
+	margin:  0;
+	background-color: black;
+}
+
+/* */
+.startscene {
+	background-color: #fcc800;
+}
+
+.gamescene {
+	background-color: gray;
+}
+
+.gameoverscene {
+	background-color: rgba(0, 0, 0, 0.5);
+}
+
+/*　タイトルとか　*/
+.title, .gameover {
+	color       : white; 
+    text-align  : center;
+    font-size   : 44px;
+    font-family : sans-serif;
+}
+
+.info {
+	color       : white; 
+    text-align  : center;
+    font-size   : 22px;
+    font-family : sans-serif;
+}
+
+/*　タッチ系ボタン　*/
+.start,.reset {
+	color       : red; 
+    text-align  : center;
+    font-size   : 44px;
+    font-family : sans-serif;
+}
+
+/* ハードル */
+.hurdle {
+	background: blue; 
+ }
+
+/*　主人公　*/
+.person {
+	background-color: white; 
+}
+.hit {
+	background-color: red; 
+}
+
+/*　スコア　*/
+.score,.score_mini {
+	color       : white; 
+    font-family : sans-serif;
+}
+
+.score {
+    text-align  : center;
+    font-size   : 44px;
+}
+
+.score_mini {
+    font-size   : 22px;
+}
+
+
+
+

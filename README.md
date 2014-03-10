@@ -5,16 +5,17 @@ This simple game made for the team "755Apps". The linsens is MIT.
 
 Version
 ----
-0.1
+0.1 (2014/03/08)
 
 
 License
 ----
-MIT 
+Copyright © Apollon Distributed under the [MIT License][MIT].
 
-info
+About
 ---
-JavaScript学習用のサンプルゲームを作ってみました。実機で動かす場合、実機験証していないので人柱覚悟でお願いします。
+JavaScript学習用のサンプルゲームを作ってみました。  
+実機験証していないので、実機で動かす場合人柱覚悟でお願いします。
 
 
 開発環境
@@ -67,3 +68,4 @@ Xcode等のiosの開発環境を整備してから下記コマンド実行
 [node.js]: http://nodejs.org/
 [phonegap]: http://phonegap.com/
 [enchantjs]: http://enchantjs.com/ja/
+[MIT]: http://opensource.org/licenses/mit-license.php

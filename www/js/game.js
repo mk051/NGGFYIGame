@@ -19,7 +19,7 @@ Object.defineProperty(enchant.Label.prototype, "css", {
         var font = getStyle(className).fontSize + ' ' + getStyle(className).fontFamily;
 
         if("color"     in this ) { this.color     = getStyle(className).color;     };
-        if("font"      in this ) { this.font      = font;                              };
+        if("font"      in this ) { this.font      = font;                          };
         if("textAlign" in this ) { this.textAlign = getStyle(className).textAlign; };
 
 //        console.log("className:"+className);
@@ -45,6 +45,10 @@ Object.defineProperty(enchant.Scene.prototype, "css", {
     }
 });
 
+var game;
+var width;
+var height;
+
 window.onload = function() {
 
     var LABEL_START    = '->スタート<-';
@@ -55,20 +59,21 @@ window.onload = function() {
     var LABEL_GAMEOVER = 'Gameover';
     var LABEL_RESET    = '->リセット<-';
     var LABEL_POINT    = '点';
+    var LABEL_SEND     = '<<-スコア送信->>';
 
     var VALUE_MOVE_INTERVAL = 3;
 
-    var width  = window.innerWidth;
-    var height = window.innerHeight;
+    width  = window.innerWidth;
+    height = window.innerHeight;
     
-    var game_ = new Core(width, height); // 表示領域の大きさを設定
-    game_.fps = 24;                      // ゲームの進行スピードを設定
+    game = new Core(width, height); // 表示領域の大きさを設定
+    game.fps = 24;                      // ゲームの進行スピードを設定
 
     function cc(n,obj){  //computeCenter
         return (n - obj.height) / 2;
     }
 
-    game_.onload = function() { // ゲームの準備が整ったら実行する処理
+    game.onload = function() { // ゲームの準備が整ったら実行する処理
 
         //タイトル画面
         var createStartScene = function() {
@@ -118,7 +123,7 @@ window.onload = function() {
             // スタートにタッチイベントを設定
             start.addEventListener(Event.TOUCH_START, function(e) {
                 // 現在表示しているシーンをゲームシーンに置き換える
-                game_.replaceScene(createGameScene());
+                game.replaceScene(createGameScene());
             });
 
             return scene;
@@ -176,7 +181,7 @@ window.onload = function() {
             var personHit = function() {
 
                 // ゲームオーバーシーンをゲームシーンに重ねる(push)
-                game_.pushScene(createGameoverScene(scroll));
+                game.pushScene(createGameoverScene(scroll));
             }
 
             var touch = false;  //タッチ状態 {true:触れてる false:離してる}
@@ -192,14 +197,18 @@ window.onload = function() {
                     hurdleTop.x = width; // ハードル(上)を右端に移動(出現)
                     hurdleBtm.x = width; // ハードル（下）を右端に移動(出現)
 
+                    //　ハードルの高さを調節
                     var heightTop = height / 2 * Math.random() + 0.5; 
                     var heightBtm = height - (person.height * (Math.random() + 5)) - heightTop;
+
+                    // ハードル同士の間の高さ取得
                     var margin = height - heightTop + heightBtm;
 
                     if (person.height < margin)
                     {
+                        // ハードルの高さ調節
                         hurdleTop.height = heightTop;
-                        hurdleBtm.height = heightBtm;
+                        hurdleBtm.height = heightBtm;   
                         hurdleBtm.y      = height - hurdleBtm.height; // 縦位置調整:画面下と合わせる
                     }
                 }
@@ -207,19 +216,20 @@ window.onload = function() {
                 hurdleTop.x -= SCROLL_SPEED; // ハードル(上)をスクロール
                 hurdleBtm.x -= SCROLL_SPEED; // ハードル（下）をスクロール
 
+                // ハードルとの衝突判定
                 if (hurdleTop.intersect(person_hit) 
-                ||  hurdleBtm.intersect(person_hit)) { // ハードルにぶつかったとき
+                ||  hurdleBtm.intersect(person_hit)) { 
                     personHit(); // 衝突した
                 }
 
+                // 上下との衝突判定
                 if ( person.y < 0 || height < person.y ) {
                     personHit();    // 衝突した
                 };
 
+                // キャラの上下
                 if(touch != false) { person.y -= VALUE_MOVE_INTERVAL; } // 上昇
                 else               { person.y += VALUE_MOVE_INTERVAL; } // 下降
-
-
 
                 // 当たり判定を主人公の上下中心に置く
                 person_hit.x = person.x + (person.width  - person_hit.width) /2;
@@ -258,8 +268,8 @@ window.onload = function() {
 
             // リトライボタンにタッチイベントを追加する
             reset.addEventListener(Event.TOUCH_END, function(){
-                game_.popScene();                       // このシーンを剥がす（pop）
-                game_.replaceScene(createStartScene()); // ゲームシーンをタイトルシーンと入れ替える(replace)
+                game.popScene();                       // このシーンを剥がす（pop）
+                game.replaceScene(createStartScene()); // ゲームシーンをタイトルシーンと入れ替える(replace)
             });
 
             // スコア表示用ラベルの設定
@@ -270,12 +280,83 @@ window.onload = function() {
             score.css   = 'score';
             scene.addChild(score);                // シーンに追加
 
+            // 送信ボタンを設定
+            var send   = new Label(LABEL_SEND); // スプライトを作る
+            send.x     = 0;                      // 横位置調整
+            send.y     = cc(height,send) * 0.4; // 縦位置調整
+            send.width = width;
+            send.css   = 'score';
+            scene.addChild(send);
+
+/*
+            const url    = "ws://polar-cliffs-3920.herokuapp.com/websocket/";
+            var ws;
+
+            // FireFoxとの互換性を考慮してインスタンス化
+                 if ("WebSocket" in window)    { ws = new WebSocket(url);    }
+            else if ("MozWebSocket" in window) { ws = new MozWebSocket(url); }
+            else                               {              return ;       }
+
+            // メッセージ受信時のコールバック関数
+            ws.onmessage = function(event){
+                console.log("受信メッセージ:" + event.data);
+            }
+
+            // メッセージ送信
+            function onSend(json){
+                console.log("送信メッセージ:" + json);
+                ws.send(json);
+            }
+
+            // 終了時に明示的に接続を閉じる
+            window.onunload = function(){
+
+                var code = 4500;
+                var reason = "クライアントが閉じられました。";
+                ws.close(code,reason);
+                console.log("クライアントが閉じられました。:" + code);
+            }
+*/
+
+            // リトライボタンにタッチイベントを追加する
+            send.addEventListener(Event.TOUCH_END, function(){
+/*
+                var username = prompt("ユーザー名を入力", "");
+                if (username == null){
+                    return ;
+                }
+
+                // JSON をサポートしているか調べる
+                if(!window.JSON){
+                    console.log("json変換:未対応");
+                }
+
+                //JSONパース
+                var message  = score;
+                var senddata = {new_message:{data:{name:username.toString(),body:100}}};
+                var json     = JSON.stringify(senddata); // jsonに変換
+                console.log("json:" + json);
+
+                onSend(json);
+*/
+            });
+
             return scene;   //ゲームシーンを返します
         };
 
         // ゲームの_rootSceneをスタートシーンに置き換える
-        game_.replaceScene(createStartScene());
+        game.replaceScene(createStartScene());
     }
 
-    game_.start(); // ゲームをスタートさせます
+    game.start(); // ゲームをスタートさせます
 }
+
+window.onresize = function() {
+
+    // 画面サイズをリサイズ
+    width  = window.innerWidth;
+    height = window.innerHeight;
+    game.width = width;
+    game.height;
+}
+

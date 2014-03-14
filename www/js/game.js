@@ -63,6 +63,40 @@ window.onload = function() {
 
     var VALUE_MOVE_INTERVAL = 3;
 
+    var WS_URL = "ws://young-gorge-3558.herokuapp.com/";  //WebSocket接続先
+    var ws;
+
+    try{
+        // FireFox（かなり古い）との互換性を考慮してインスタンス化
+             if ("WebSocket"    in window) { ws = new WebSocket(WS_URL);    }
+        else if ("MozWebSocket" in window) { ws = new MozWebSocket(WS_URL); }
+        else                               { return ; }
+    }
+    catch(e){
+        console.log("WebSocket接続失敗："+ws);
+    }
+
+    // メッセージ受信時のコールバック関数
+    ws.onmessage = function(event){
+        console.log("受信メッセージ:" + event.data);
+    }
+
+    // メッセージ送信
+    function onSend(json){
+        console.log("送信メッセージ:" + json);
+        ws.send(json);
+    }
+
+    // 終了時に明示的に接続を閉じる
+    window.onunload = function(){
+
+        var code = 4500;
+        var reason = "クライアントが閉じられました。";
+        ws.close(code,reason);
+        console.log("クライアントが閉じられました。:" + code);
+    }
+
+
     width  = window.innerWidth;
     height = window.innerHeight;
     
@@ -288,43 +322,18 @@ window.onload = function() {
             send.css   = 'score';
             scene.addChild(send);
 
-/*
-            const url    = "ws://polar-cliffs-3920.herokuapp.com/websocket/";
-            var ws;
-
-            // FireFoxとの互換性を考慮してインスタンス化
-                 if ("WebSocket" in window)    { ws = new WebSocket(url);    }
-            else if ("MozWebSocket" in window) { ws = new MozWebSocket(url); }
-            else                               {              return ;       }
-
-            // メッセージ受信時のコールバック関数
-            ws.onmessage = function(event){
-                console.log("受信メッセージ:" + event.data);
-            }
-
-            // メッセージ送信
-            function onSend(json){
-                console.log("送信メッセージ:" + json);
-                ws.send(json);
-            }
-
-            // 終了時に明示的に接続を閉じる
-            window.onunload = function(){
-
-                var code = 4500;
-                var reason = "クライアントが閉じられました。";
-                ws.close(code,reason);
-                console.log("クライアントが閉じられました。:" + code);
-            }
-*/
-
             // リトライボタンにタッチイベントを追加する
             send.addEventListener(Event.TOUCH_END, function(){
-/*
-                var username = prompt("ユーザー名を入力", "");
-                if (username == null){
+
+                //保存されたユーザー名取得
+                var username = window.localStorage.getItem("username");
+                    username = prompt("ユーザー名を入力", username);
+                if (username == null || username == ""){
                     return ;
                 }
+
+                //ユーザー名保存
+                window.localStorage.setItem("username", username);
 
                 // JSON をサポートしているか調べる
                 if(!window.JSON){
@@ -332,13 +341,13 @@ window.onload = function() {
                 }
 
                 //JSONパース
-                var message  = score;
-                var senddata = {new_message:{data:{name:username.toString(),body:100}}};
+                var message  = scroll + "点(755Apps:糸通し javascript var)";
+                var senddata = {name: username, body: message.toString()};
                 var json     = JSON.stringify(senddata); // jsonに変換
                 console.log("json:" + json);
 
-                onSend(json);
-*/
+                //送信
+//                ws.send(json);  
             });
 
             return scene;   //ゲームシーンを返します
